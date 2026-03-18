@@ -1,533 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <title>CI/CD Pipeline Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            text-align: center;
+        }
 
-    :root {
-      --bg: #0d0f14;
-      --surface: #141720;
-      --border: #1e2330;
-      --accent: #5b8ff9;
-      --accent2: #f7c948;
-      --accent3: #50d9a0;
-      --accent4: #f76b8a;
-      --text: #e8eaf0;
-      --muted: #6b7280;
-      --radius: 14px;
-    }
+        h1 {
+            background: #0078d4;
+            color: white;
+            padding: 20px;
+        }
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-    }
+        .container {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
 
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      padding: 28px 16px;
-      gap: 6px;
-      flex-shrink: 0;
-    }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 15px;
+            width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
 
-    .logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--accent);
-      letter-spacing: -0.5px;
-      margin-bottom: 28px;
-      padding-left: 10px;
-    }
+        .status-success {
+            color: green;
+            font-weight: bold;
+        }
 
-    .logo span { color: var(--text); }
+        .status-running {
+            color: orange;
+            font-weight: bold;
+        }
 
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 0.88rem;
-      font-weight: 400;
-      color: var(--muted);
-      transition: all 0.15s;
-    }
-
-    .nav-item:hover { background: var(--border); color: var(--text); }
-    .nav-item.active { background: rgba(91,143,249,0.12); color: var(--accent); font-weight: 500; }
-
-    .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
-
-    .sidebar-footer {
-      margin-top: auto;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-
-    .avatar {
-      width: 34px; height: 34px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 700; color: #fff;
-    }
-
-    .user-info { flex: 1; overflow: hidden; }
-    .user-name { font-size: 0.82rem; font-weight: 500; }
-    .user-role { font-size: 0.72rem; color: var(--muted); }
-
-    /* Main */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Topbar */
-    .topbar {
-      padding: 20px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg);
-    }
-
-    .page-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-    }
-
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-
-    .search-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 14px;
-      color: var(--text);
-      font-size: 0.83rem;
-      font-family: inherit;
-      outline: none;
-      width: 200px;
-    }
-
-    .search-box::placeholder { color: var(--muted); }
-    .search-box:focus { border-color: var(--accent); }
-
-    .icon-btn {
-      width: 36px; height: 36px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--muted);
-      transition: all 0.15s;
-    }
-
-    .icon-btn:hover { color: var(--text); border-color: var(--accent); }
-
-    /* Content */
-    .content {
-      flex: 1;
-      padding: 28px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    /* Stats row */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-
-    .stat-card:hover { transform: translateY(-2px); border-color: #2e3348; }
-
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      border-radius: var(--radius) var(--radius) 0 0;
-    }
-
-    .stat-card:nth-child(1)::before { background: var(--accent); }
-    .stat-card:nth-child(2)::before { background: var(--accent2); }
-    .stat-card:nth-child(3)::before { background: var(--accent3); }
-    .stat-card:nth-child(4)::before { background: var(--accent4); }
-
-    .stat-icon {
-      width: 36px; height: 36px;
-      border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-    }
-
-    .stat-card:nth-child(1) .stat-icon { background: rgba(91,143,249,0.12); }
-    .stat-card:nth-child(2) .stat-icon { background: rgba(247,201,72,0.12); }
-    .stat-card:nth-child(3) .stat-icon { background: rgba(80,217,160,0.12); }
-    .stat-card:nth-child(4) .stat-icon { background: rgba(247,107,138,0.12); }
-
-    .stat-label { font-size: 0.78rem; color: var(--muted); font-weight: 400; }
-    .stat-value { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; line-height: 1; }
-    .stat-change { font-size: 0.75rem; }
-    .up { color: var(--accent3); }
-    .down { color: var(--accent4); }
-
-    /* Lower grid */
-    .lower-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 16px;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 18px;
-    }
-
-    .card-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      padding: 3px 9px;
-      border-radius: 20px;
-      background: rgba(91,143,249,0.12);
-      color: var(--accent);
-      font-weight: 500;
-    }
-
-    /* Chart bars */
-    .bar-chart {
-      display: flex;
-      align-items: flex-end;
-      gap: 8px;
-      height: 130px;
-    }
-
-    .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-
-    .bar {
-      width: 100%;
-      border-radius: 5px 5px 0 0;
-      background: var(--accent);
-      opacity: 0.7;
-      transition: opacity 0.2s;
-      cursor: pointer;
-    }
-
-    .bar:hover { opacity: 1; }
-    .bar.secondary { background: var(--accent3); opacity: 0.5; }
-    .bar-label { font-size: 0.65rem; color: var(--muted); }
-
-    /* Activity list */
-    .activity-list { display: flex; flex-direction: column; gap: 14px; }
-
-    .activity-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .activity-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .activity-text { flex: 1; font-size: 0.82rem; }
-    .activity-text strong { font-weight: 500; }
-    .activity-time { font-size: 0.72rem; color: var(--muted); }
-
-    /* Table */
-    .data-table { width: 100%; border-collapse: collapse; }
-
-    .data-table th {
-      text-align: left;
-      font-size: 0.72rem;
-      color: var(--muted);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0 0 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .data-table td {
-      padding: 12px 0;
-      font-size: 0.83rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .data-table tr:last-child td { border-bottom: none; }
-
-    .status-pill {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 500;
-    }
-
-    .status-active { background: rgba(80,217,160,0.12); color: var(--accent3); }
-    .status-pending { background: rgba(247,201,72,0.12); color: var(--accent2); }
-    .status-inactive { background: rgba(247,107,138,0.1); color: var(--accent4); }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-  </style>
+        .status-failed {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body>
 
-<!-- Sidebar -->
-<aside class="sidebar">
-  <div class="logo">dash<span>.</span></div>
+<h1>Azure DevOps CI/CD Dashboard</h1>
 
-  <div class="nav-item active">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    Overview
-  </div>
-  <div class="nav-item">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Analytics
-  </div>
-  <div class="nav-item">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    Users
-  </div>
-  <div class="nav-item">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-    Projects
-  </div>
-  <div class="nav-item">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    Messages
-  </div>
-  <div class="nav-item">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-    Settings
-  </div>
+<div class="container">
 
-  <div class="sidebar-footer">
-    <div class="avatar">AK</div>
-    <div class="user-info">
-      <div class="user-name">Arjun K.</div>
-      <div class="user-role">Admin</div>
-    </div>
-  </div>
-</aside>
-
-<!-- Main -->
-<main class="main">
-  <header class="topbar">
-    <div class="page-title">Overview</div>
-    <div class="topbar-right">
-      <input class="search-box" type="text" placeholder="Search…"/>
-      <button class="icon-btn" title="Notifications">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      </button>
-      <button class="icon-btn" title="Theme">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <div class="content">
-
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">📈</div>
-        <div class="stat-label">Total-Revenue</div>
-        <div class="stat-value">$84,290</div>
-        <div class="stat-change up">↑ 12.4% this month</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🛒</div>
-        <div class="stat-label">Total Orders</div>
-        <div class="stat-value">3,842</div>
-        <div class="stat-change up">↑ 8.1% this month</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">👥</div>
-        <div class="stat-label">Active Users</div>
-        <div class="stat-value">12,540</div>
-        <div class="stat-change up">↑ 5.6% this month</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">⚠️</div>
-        <div class="stat-label">Bounce Rate</div>
-        <div class="stat-value">34.2%</div>
-        <div class="stat-change down">↓ 2.3% this month</div>
-      </div>
-    </div>
-
-    <!-- Charts + Activity -->
-    <div class="lower-grid">
-      <!-- Bar chart -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Monthly Revenue</div>
-          <span class="badge">2024</span>
-        </div>
-        <div class="bar-chart">
-          <div class="bar-group"><div class="bar" style="height:55px"></div><div class="bar secondary" style="height:40px"></div><div class="bar-label">Jan</div></div>
-          <div class="bar-group"><div class="bar" style="height:80px"></div><div class="bar secondary" style="height:60px"></div><div class="bar-label">Feb</div></div>
-          <div class="bar-group"><div class="bar" style="height:65px"></div><div class="bar secondary" style="height:50px"></div><div class="bar-label">Mar</div></div>
-          <div class="bar-group"><div class="bar" style="height:100px"></div><div class="bar secondary" style="height:75px"></div><div class="bar-label">Apr</div></div>
-          <div class="bar-group"><div class="bar" style="height:85px"></div><div class="bar secondary" style="height:65px"></div><div class="bar-label">May</div></div>
-          <div class="bar-group"><div class="bar" style="height:120px"></div><div class="bar secondary" style="height:90px"></div><div class="bar-label">Jun</div></div>
-          <div class="bar-group"><div class="bar" style="height:95px"></div><div class="bar secondary" style="height:70px"></div><div class="bar-label">Jul</div></div>
-          <div class="bar-group"><div class="bar" style="height:110px"></div><div class="bar secondary" style="height:85px"></div><div class="bar-label">Aug</div></div>
-        </div>
-      </div>
-
-      <!-- Activity -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Recent Activity</div>
-        </div>
-        <div class="activity-list">
-          <div class="activity-item">
-            <div class="activity-dot" style="background:var(--accent3)"></div>
-            <div class="activity-text"><strong>New user</strong> signed up from India</div>
-            <div class="activity-time">2m ago</div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-dot" style="background:var(--accent)"></div>
-            <div class="activity-text"><strong>Order #4921</strong> was placed</div>
-            <div class="activity-time">15m ago</div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-dot" style="background:var(--accent2)"></div>
-            <div class="activity-text"><strong>Server</strong> usage hit 80%</div>
-            <div class="activity-time">1h ago</div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-dot" style="background:var(--accent4)"></div>
-            <div class="activity-text"><strong>Payment</strong> failed for order #4890</div>
-            <div class="activity-time">3h ago</div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-dot" style="background:var(--accent3)"></div>
-            <div class="activity-text"><strong>Deploy</strong> succeeded on production</div>
-            <div class="activity-time">5h ago</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Table -->
     <div class="card">
-      <div class="card-header">
-        <div class="card-title">Recent Orders</div>
-        <span class="badge">View all →</span>
-      </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Product</th>
-            <th>Amount</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>#4921</td>
-            <td>Priya Sharma</td>
-            <td>Pro Plan</td>
-            <td>$120.00</td>
-            <td><span class="status-pill status-active">Active</span></td>
-          </tr>
-          <tr>
-            <td>#4920</td>
-            <td>Ravi Kumar</td>
-            <td>Starter Pack</td>
-            <td>$49.00</td>
-            <td><span class="status-pill status-pending">Pending</span></td>
-          </tr>
-          <tr>
-            <td>#4919</td>
-            <td>Anita Reddy</td>
-            <td>Enterprise</td>
-            <td>$499.00</td>
-            <td><span class="status-pill status-active">Active</span></td>
-          </tr>
-          <tr>
-            <td>#4918</td>
-            <td>Mohammed Ali</td>
-            <td>Pro Plan</td>
-            <td>$120.00</td>
-            <td><span class="status-pill status-inactive">Inactive</span></td>
-          </tr>
-          <tr>
-            <td>#4917</td>
-            <td>Deepa Nair</td>
-            <td>Starter Pack</td>
-            <td>$49.00</td>
-            <td><span class="status-pill status-pending">Pending</span></td>
-          </tr>
-        </tbody>
-      </table>
+        <h3>Code Commit</h3>
+        <p class="status-success">Success</p>
     </div>
 
-  </div>
-</main>
+    <div class="card">
+        <h3>Build</h3>
+        <p class="status-running">Running</p>
+    </div>
+
+    <div class="card">
+        <h3>Test</h3>
+        <p class="status-success">Passed</p>
+    </div>
+
+    <div class="card">
+        <h3>Deploy</h3>
+        <p class="status-success">Deployed</p>
+    </div>
+
+</div>
 
 </body>
 </html>
